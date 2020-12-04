@@ -1,7 +1,9 @@
 import pandas as pd
+from windrose import WindroseAxes
 from spyre import server
 import json
 import datetime
+import numpy as np
 import matplotlib.pyplot as plt
 
 # t = 0
@@ -49,7 +51,7 @@ class StockExample(server.App):
                     "key": 'city',
                     "action_id": "update_data"},
                     {     "type":'dropdown',
-                    "label": 'Exercise',
+                    "label": 'Exercise1',
                     "options" : [ {"label": "T_plot", "value":"T_plot"},
                                   {"label": "T_val_plot", "value":"T_val_plot"},
                                   {"label": "Wind", "value":"Wind"},
@@ -57,37 +59,69 @@ class StockExample(server.App):
                                   {"label": "sun_izo", "value":"sun_izo"},
                                   {"label": "val_sun_izo", "value":"val_sun_izo"},],
                     "key": 'exer',
-                    "action_id": "update_data"}]
+                    "action_id": "update_data"},
+                    {     "type":'dropdown',
+                    "label": 'Exercise1',
+                    "options" : [ {"label": "2_1", "value":"2_1"},
+                                  {"label": "2_2", "value":"2_2"},
+                                  {"label": "2_3", "value":"2_3"},
+                                  {"label": "2_4", "value":"2_4"},
+                                  {"label": "2_5", "value":"2_5"},
+                                  {"label": "2_6", "value":"2_6"},
+                                  {"label": "2_7", "value":"2_7"},
+                                  {"label": "2_8", "value":"2_8"},],
+                    "key": 'exer_2',
+                    "action_id": "update_data"},
+                    {
+                        "type":'text',
+                        "label": '2.1 Вт/м2',
+                        "value" : '12',
+                        "key": 's_one',
+                        "action_id" : "refresh",
+                    },
+                    {
+                        "type":'text',
+                        "label": '2.1 S',
+                        "value" : '3',
+                        "key": 's_one_s',
+                        "action_id" : "refresh",
+                    },
+                    {
+                        "type":'text',
+                        "label": '2.2: Nд/Qд/Тд/Nв/Qв/Тв',
+                        "value" : '3/2/3/1/2/1',
+                        "key": 's_s',
+                        "action_id" : "refresh",
+                    },
+                    {
+                        "type":'text',
+                        "label": '2.2: T.вх/T.вих/Т.бака/t.нагр',
+                        "value" : '3/2/2/3',
+                        "key": 's_s_s',
+                        "action_id" : "refresh",
+                    },
+                    {
+                        "type":'text',
+                        "label": '2.3: T.вх/T.вих/Т.бака/t.нагр',
+                        "value" : '3/2/2/3',
+                        "key": 's_t',
+                        "action_id" : "refresh",
+                    },]
 
     controls = [{    "type" : "hidden",
                     "id" : "update_data"}]
 
-    tabs = ["T_plot"]
+    tabs = ["Plot","Answer"]
 
     outputs = [{ "type" : "plot",
                     "id" : "plot",
                     "control_id" : "update_data",
-                    "tab" : "T_plot"},
-
-                { "type" : "plot_4",
-                    "id" : "plot_4",
+                    "tab" : "Plot"},
+                { "type" : "html",
+                    "id" : "plot",
                     "control_id" : "update_data",
-                    "tab" : "T_val_plot",},
-
-                { "type" : "plot",
-                    "id" : "plo2",
-                    "control_id" : "update_data",
-                    "tab" : "Wind"},
-
-                { "type" : "plot",
-                    "id" : "plot3",
-                    "control_id" : "update_data",
-                    "tab" : "val_Wind"},
-
-                { "type" : "plot",
-                    "id" : "plot4",
-                    "control_id" : "update_data",
-                    "tab" : "sun_izo"},]
+                    "tab" : "Answer",
+                    "on_page_load" : True },]
 
     def getPlot(self, params):
         LIST_CITY = ["львов+","кривой_рог+","симферополь+","и_франк+","донецк+","харьков+","днепропетровськ+","киев+","одесса+","луганськ+"]
@@ -101,7 +135,7 @@ class StockExample(server.App):
             del df["PPP"]
             del df["hhh"]
             del df["Unnamed: 0.1"]
-            plt_obj = df.plot(figsize=(25,5))
+            plt_obj = df.plot(figsize=(30,10))
             plt_obj.set_ylabel("Sun Izo")
             plt_obj.set_xlabel("Date")
             plt_obj.set_title(citys)
@@ -116,14 +150,14 @@ class StockExample(server.App):
                 q = (df['T'] == i).sum()
                 dict_val.update({i : q})
             dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
-            plt_obj = dfc.plot.bar(figsize=(25,5))
+            plt_obj = dfc.plot.bar(figsize=(30,10))
         elif params["exer"] == "sun_izo":
             del df["FF"]
             del df["N"]
             del df["PPP"]
             del df["T"]
             del df["Unnamed: 0.1"]
-            plt_obj = df.plot(figsize=(25,5))
+            plt_obj = df.plot(figsize=(30,10))
             plt_obj.set_ylabel("Temperature")
             plt_obj.set_xlabel("Date")
             plt_obj.set_title(citys)
@@ -138,12 +172,68 @@ class StockExample(server.App):
                 q = (df['FF'] == i).sum()
                 dict_val.update({i : q})
             dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
-            plt_obj = dfc.plot.bar(figsize=(25,5))
+            plt_obj = dfc.plot.bar(figsize=(30,10))
             plt_obj.set_ylabel("Wind")
             plt_obj.set_xlabel("Num")
             plt_obj.set_title(citys)
+        elif params["exer"] == "val_sun_izo":
+            arr = df["hhh"].unique()
+            del df["FF"]
+            del df["N"]
+            del df["PPP"]
+            del df["T"]
+            del df["Unnamed: 0.1"]
+            dict_val = {}
+            for i in arr:
+                if i == 0:
+                    continue
+                else:
+                    q = (df['hhh'] == i).sum()
+                    dict_val.update({i : q})
+            dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
+            plt_obj = dfc.plot.bar(figsize=(30,10))
+        elif params["exer"] == "Wind":
+            ws_df = df["dd"].to_numpy()
+            wd_df = df["FF"].to_numpy()
+            ws = np.random.random(1500) * 6
+            wd = np.random.random(1500) * 360
+            ax = WindroseAxes.from_ax()
+            ax.bar(wd, ws, normed=True, opening=0.8, edgecolor='white')
+            ax.set_legend()
+            fig = ax.get_figure()
+            return fig
         fig = plt_obj.get_figure()
         return fig
+
+    def getHTML(self, params):
+        if params["exer_2"] == "2_1":
+            res = int(params["s_one"]) * int(params["s_one_s"])
+            return f"<a>Result : {res}</a> "
+        elif params["exer_2"] == "2_2":
+            List_str = params["s_s"] + "/" + params["s_s_s"]
+            List_arg = List_str.split('/')
+            List_arg = list(map(int, List_arg))
+            print(List_arg)
+            Q_d = List_arg[0] * List_arg[1]
+            Q_v = List_arg[3] * List_arg[4]
+            Q_td = Q_d*((List_arg[2] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tv = Q_v*((List_arg[5] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tgv = ((Q_td - Q_tv) / 998.23)
+            W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
+            print(W_tgv,List_arg[9])
+            P_gvp = W_tgv / List_arg[9]
+            return f"Q душ  = {Q_d}<br>Q ванн  = {Q_v}<br>Qt душ = {Q_td}<br>Qt ванн = {Q_tv}<br>Qt г.води = {Q_tgv}<br>W г.води = {W_tgv}<br>P ГВП = {P_gvp}"
+        # elif params["exer_2"] == "2_3":
+
+        # elif params["exer_2"] == "2_4":
+        # elif params["exer_2"] == "2_5":
+        # elif params["exer_2"] == "2_6":
+        # elif params["exer_2"] == "2_7":
+        # elif params["exer_2"] == "2_8":
+        return "<a>Error</a>"
+
+    def getCustomCSS(self):
+        return "body {background:grey;}"
 
 app = StockExample()
 app.launch(port=9093)
