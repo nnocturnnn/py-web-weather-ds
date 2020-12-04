@@ -118,11 +118,38 @@ class StockExample(server.App):
                     "control_id" : "update_data",
                     "tab" : "Plot"},
                 { "type" : "html",
-                    "id" : "plot",
+                    "id" : "simphtml",
                     "control_id" : "update_data",
                     "tab" : "Answer",
                     "on_page_load" : True },]
 
+    def getHTML(self, params):
+        if params["exer_2"] == "2_1":
+            res = int(params["s_one"]) * int(params["s_one_s"])
+            return f"<a>Result : {res}</a> "
+        elif params["exer_2"] == "2_2":
+            List_str = params["s_s"] + "/" + params["s_s_s"]
+            List_arg = List_str.split('/')
+            List_arg = list(map(int, List_arg))
+            print(List_arg)
+            Q_d = List_arg[0] * List_arg[1]
+            Q_v = List_arg[3] * List_arg[4]
+            Q_td = Q_d*((List_arg[2] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tv = Q_v*((List_arg[5] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tgv = ((Q_td - Q_tv) / 998.23)
+            W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
+            print(W_tgv,List_arg[9])
+            P_gvp = W_tgv / List_arg[9]
+            return f"Q душ  = {Q_d}<br>Q ванн  = {Q_v}<br>Qt душ = {Q_td}<br>Qt ванн = {Q_tv}<br>Qt г.води = {Q_tgv}<br>W г.води = {W_tgv}<br>P ГВП = {P_gvp}"
+        # elif params["exer_2"] == "2_3":
+
+        # elif params["exer_2"] == "2_4":
+        # elif params["exer_2"] == "2_5":
+        # elif params["exer_2"] == "2_6":
+        # elif params["exer_2"] == "2_7":
+        # elif params["exer_2"] == "2_8":
+        return "<a>Error</a>"
+    
     def getPlot(self, params):
         LIST_CITY = ["львов+","кривой_рог+","симферополь+","и_франк+","донецк+","харьков+","днепропетровськ+","киев+","одесса+","луганськ+"]
         citys = params["city"]
@@ -204,33 +231,6 @@ class StockExample(server.App):
             return fig
         fig = plt_obj.get_figure()
         return fig
-
-    def getHTML(self, params):
-        if params["exer_2"] == "2_1":
-            res = int(params["s_one"]) * int(params["s_one_s"])
-            return f"<a>Result : {res}</a> "
-        elif params["exer_2"] == "2_2":
-            List_str = params["s_s"] + "/" + params["s_s_s"]
-            List_arg = List_str.split('/')
-            List_arg = list(map(int, List_arg))
-            print(List_arg)
-            Q_d = List_arg[0] * List_arg[1]
-            Q_v = List_arg[3] * List_arg[4]
-            Q_td = Q_d*((List_arg[2] - List_arg[6]) / (List_arg[7] - List_arg[6]))
-            Q_tv = Q_v*((List_arg[5] - List_arg[6]) / (List_arg[7] - List_arg[6]))
-            Q_tgv = ((Q_td - Q_tv) / 998.23)
-            W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
-            print(W_tgv,List_arg[9])
-            P_gvp = W_tgv / List_arg[9]
-            return f"Q душ  = {Q_d}<br>Q ванн  = {Q_v}<br>Qt душ = {Q_td}<br>Qt ванн = {Q_tv}<br>Qt г.води = {Q_tgv}<br>W г.води = {W_tgv}<br>P ГВП = {P_gvp}"
-        # elif params["exer_2"] == "2_3":
-
-        # elif params["exer_2"] == "2_4":
-        # elif params["exer_2"] == "2_5":
-        # elif params["exer_2"] == "2_6":
-        # elif params["exer_2"] == "2_7":
-        # elif params["exer_2"] == "2_8":
-        return "<a>Error</a>"
 
     def getCustomCSS(self):
         return "body {background:grey;}"
