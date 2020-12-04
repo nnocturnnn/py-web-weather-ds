@@ -60,7 +60,8 @@ class StockExample(server.App):
                     },
                     {     "type":'dropdown',
                     "label": 'Exercise1',
-                    "options" : [ {"label": "T_plot", "value":"T_plot"},
+                    "options" : [
+                        {"label": "-", "value":"-"}, {"label": "T_plot", "value":"T_plot"},
                                   {"label": "T_val_plot", "value":"T_val_plot"},
                                   {"label": "Wind", "value":"Wind"},
                                   {"label": "val_wind", "value":"val_wind"},
@@ -206,9 +207,13 @@ class StockExample(server.App):
             Q_tgv = ((Q_td - Q_tv) / 998.23)
             W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
             dict_cost = {"1" : 16.784, "2" : 12.76, "3" : 19.20, "4" : 23.20, "5" : 17.74, "6" : 12.80}
-            f = params["s_six_t"]
+            f = int(params["s_six_t"])
             key = params["s_six"]
             res_this = res * W_tgv * f * dict_cost[key]
+            List_cost = []
+            for i in dict_cost:
+                qu = res * W_tgv * f * dict_cost[i]
+                List_cost.append(qu)
             if params["exer_2"] == "2_6":
                 if key == "1":
                     return f"<font 'text-align: center; size=20' face='Arial'>За відомими обсягам споживання розрахувати вартість опалення та ГВП будівлі для умов: теплозабезпечення від централізованої мережі = {res_this}</font>"
@@ -223,8 +228,7 @@ class StockExample(server.App):
                 elif key == "6":
                     return f"<font 'text-align: center; size=20' face='Arial'>За відомими обсягам споживання розрахувати вартість опалення та ГВП будівлі для умов: автономного теплозабезпечення від електричного котла = {res_this}</font>"
                 return "<a>Error</a>"
-            elif params["exer_2"] == "2_7":
-                print("hui")
+
         return "<a>Error</a>"
     
     def getPlot(self, params):
@@ -313,7 +317,33 @@ class StockExample(server.App):
             ax.set_legend()
             fig = ax.get_figure()
             return fig
-        
+        elif params["exer_2"] == "2_7":
+            citys = params["city"]
+            index = LIST_CITY.index(citys + "+")
+            df = pd.read_csv(str(index) + ".csv",index_col=0)
+            q = (df['T'] == params["sli"] - 30).sum()
+            res = q * 18.23
+            List_str = params["s_s"] + "/" + params["s_s_s"]
+            List_arg = List_str.split('/')
+            List_arg = list(map(int, List_arg))
+            Q_d = List_arg[0] * List_arg[1]
+            Q_v = List_arg[3] * List_arg[4]
+            Q_td = Q_d*((List_arg[2] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tv = Q_v*((List_arg[5] - List_arg[6]) / (List_arg[7] - List_arg[6]))
+            Q_tgv = ((Q_td - Q_tv) / 998.23)
+            W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
+            dict_cost = {"1" : 16.784, "2" : 12.76, "3" : 19.20, "4" : 23.20, "5" : 17.74, "6" : 12.80}
+            f = int(params["s_six_t"])
+            key = params["s_six"]
+            List_cost = []
+            for i in dict_cost:
+                qu = res * W_tgv * f * dict_cost[i]
+                List_cost.append(qu)
+            dict_val = { i : List_cost[i] for i in range(0, len(List_cost) ) }
+            dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
+            plt_obj = dfc.plot.bar(figsize=(30,10))
+            fig = plt_obj.get_figure()
+            return fig
 
         fig = plt_obj.get_figure()
         return fig
