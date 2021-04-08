@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import janitor
 
+# LIST_CITY = ["львов+","кривой_рог+","симферополь+","и_франк+","донецк+","харьков+","днепропетровськ+","киев+","одесса+","луганськ+"]
 # t = 0
 # for j in LIST_CITY:              # create df from files
 #     data_fr = pd.DataFrame()
@@ -18,20 +19,23 @@ import janitor
 #             data_fr["Mon"] = data_fr["Mon"].fillna(i)
 #     data_fr.to_csv(str(t) + ".csv")
 #     t += 1
-    # LIST_DF.append(data_fr)
+#     # LIST_DF.append(data_fr)
 
-# for i in range(3,10):          # fix date and clean db
+# for i in range(10):          # fix date and clean db
 #     df = pd.read_csv(str(i) + ".csv")
 #     df = df.fillna("0")
 #     df['Число месяца'] = df['Число месяца'].astype(int)
 #     df['Mon'] = df['Mon'].astype(int)
 #     df['UTC'] = df['Число месяца'].astype(str) + "." + df['UTC']
-#     df['UTC'] = df['Mon'].astype(str) + "." + df['UTC']
+#     df['UTC'] = "2012." + df['Mon'].astype(str) + "." + df['UTC']
 #     del df['Число месяца']
 #     del df['Mon']
 #     del df['U']
-#     df['UTC'] = pd.to_datetime(df['UTC'],format='%m.%d.%H:%M:%S', errors='coerce')
+#     df['UTC'] = pd.to_datetime(df['UTC'],format='%Y.%m.%d.%H:%M:%S', errors='coerce')
 #     df.to_csv(str(i) + ".csv")
+
+
+
 
 
 class StockExample(server.App):
@@ -70,7 +74,7 @@ class StockExample(server.App):
                     "key": 'exer',
                     "action_id": "update_data"},
                     {     "type":'dropdown',
-                    "label": 'Exercise1',
+                    "label": 'Exercise2',
                     "options" : [ {"label": "2_1", "value":"2_1"},
                                   {"label": "2_2", "value":"2_2"},
                                   {"label": "2_3", "value":"2_3"},
@@ -243,7 +247,7 @@ class StockExample(server.App):
         mon_f = date_f.split('.')[1]
         day_s = date_s.split('.')[0]
         mon_s = date_s.split('.')[1]
-        df = df[(df['UTC'] > '1900-'+mon_f+'-'+day_f) & (df['UTC'] < '1900-'+mon_s+'-'+day_s)]
+        df = df[(df['UTC'] > '2012-'+mon_f+'-'+day_f) & (df['UTC'] < '2012-'+mon_s+'-'+day_s)]
         if params["exer"] == "T_plot":
             del df["FF"]
             del df["N"]
@@ -317,7 +321,7 @@ class StockExample(server.App):
             ax.set_legend()
             fig = ax.get_figure()
             return fig
-        elif params["exer_2"] == "2_7":
+        elif params["exer_2"] == "2_7" or params["exer_2"] == "2_4":
             citys = params["city"]
             index = LIST_CITY.index(citys + "+")
             df = pd.read_csv(str(index) + ".csv",index_col=0)
@@ -332,19 +336,24 @@ class StockExample(server.App):
             Q_tv = Q_v*((List_arg[5] - List_arg[6]) / (List_arg[7] - List_arg[6]))
             Q_tgv = ((Q_td - Q_tv) / 998.23)
             W_tgv = 1.163 * Q_tgv * (List_arg[8] - List_arg[6])
-            dict_cost = {"1" : 16.784, "2" : 12.76, "3" : 19.20, "4" : 23.20, "5" : 17.74, "6" : 12.80}
-            f = int(params["s_six_t"])
-            key = params["s_six"]
-            List_cost = []
-            for i in dict_cost:
-                qu = res * W_tgv * f * dict_cost[i]
-                List_cost.append(qu)
-            dict_val = { i : List_cost[i] for i in range(0, len(List_cost) ) }
-            dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
-            plt_obj = dfc.plot.bar(figsize=(30,10))
-            fig = plt_obj.get_figure()
-            return fig
-
+            if params["exer_2"] == "2_7":
+                dict_cost = {"1" : 16.784, "2" : 12.76, "3" : 19.20, "4" : 23.20, "5" : 17.74, "6" : 12.80}
+                f = int(params["s_six_t"])
+                key = params["s_six"]
+                List_cost = []
+                for i in dict_cost:
+                    qu = res * W_tgv * f * dict_cost[i]
+                    List_cost.append(qu)
+                dict_val = { i : List_cost[i] for i in range(0, len(List_cost) ) }
+                dfc = pd.DataFrame.from_dict(dict_val, orient = 'index')
+                plt_obj = dfc.plot.bar(figsize=(30,10))
+            elif params["exer_2"] == "2_4":
+                dict_gr = {}
+                for i in range(-20,20):
+                    dict_gr.update({i:i*W_tgv})
+                dfc = pd.DataFrame.from_dict(dict_gr, orient = 'index')
+                plt_obj = dfc.plot(figsize=(30,10), marker=".", markersize=40)
+                plt_obj.grid()
         fig = plt_obj.get_figure()
         return fig
 
