@@ -25,6 +25,25 @@ from calculations import (
 )
 
 
+class PlotFactory:
+    @staticmethod
+    def create_plotter(params):
+        plotters = {
+            "T_plot": lambda df, params: plot_t_plot(df, params),
+            "T_val_plot": lambda df, params: plot_t_val_plot(df),
+            "sun_izo": lambda df, params: plot_sun_izo(df, params),
+            "val_wind": lambda df, params: plot_val_wind(df),
+            "val_sun_izo": lambda df, params: plot_val_sun_izo(df),
+            "Wind": lambda df, params: plot_wind(),
+        }
+        
+        if params["exer"] in plotters:
+            return plotters[params["exer"]]
+        elif params["exer_2"] in ["2_7", "2_4"]:
+            return lambda df, params: plot_cost_comparison(params, df)
+        return None
+    
+
 def get_plot(params):
     city = params["city"]
     city_index = LIST_CITY.index(city + "+")
@@ -43,20 +62,9 @@ def get_plot(params):
 
 
 def plot_data(df, params):
-    if params["exer"] == "T_plot":
-        return plot_t_plot(df, params)
-    elif params["exer"] == "T_val_plot":
-        return plot_t_val_plot(df)
-    elif params["exer"] == "sun_izo":
-        return plot_sun_izo(df, params)
-    elif params["exer"] == "val_wind":
-        return plot_val_wind(df)
-    elif params["exer"] == "val_sun_izo":
-        return plot_val_sun_izo(df)
-    elif params["exer"] == "Wind":
-        return plot_wind()
-    elif params["exer_2"] in ["2_7", "2_4"]:
-        return plot_cost_comparison(params, df)
+    plotter = PlotFactory.create_plotter(params)
+    if plotter is not None:
+        return plotter(df, params)
     return None
 
 
